@@ -1,0 +1,121 @@
+name: Update and Deploy
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches: web
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          ref: web
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install MkDocs and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mkdocs mkdocs-material
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+
+      - name: Get latest commit from source repository
+        id: check-updates
+        run: |
+          SOURCE_REPO="https://github.com/KingBenny101/wallpapers.git"
+
+          LATEST_COMMIT=$(git ls-remote $SOURCE_REPO HEAD | cut -f1)
+          echo "latest_commit=$LATEST_COMMIT" >> $GITHUB_OUTPUT
+
+          if [ -f .last_commit ]; then
+            LAST_COMMIT=$(cat .last_commit)
+            echo "last_commit=$LAST_COMMIT" >> $GITHUB_OUTPUT
+            
+            if [ "$LATEST_COMMIT" = "$LAST_COMMIT" ]; then
+              echo "has_updates=false" >> $GITHUB_OUTPUT
+              echo "No new commits found."
+            else
+              echo "has_updates=true" >> $GITHUB_OUTPUT
+              echo "New commits found!"
+            fi
+          else
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+            echo "No previous commit record found. Will process repository."
+          fi
+
+      - name: Clone and process source repository
+        if: steps.check-updates.outputs.has_updates == 'true'
+        run: |
+          SOURCE_REPO="https://github.com/KingBenny101/wallpapers.git"
+
+          git clone $SOURCE_REPO temp_source_repo
+
+          if [ -d "temp_source_repo/classified" ]; then
+            mkdir -p docs
+            cp -r temp_source_repo/classified docs/
+            echo "Copied classified folder to docs/"
+          else
+            echo "Warning: classified folder not found in source repository"
+          fi
+
+          rm -rf temp_source_repo
+
+      - name: Generate docs
+        if: steps.check-updates.outputs.has_updates == 'true'
+        run: |
+          python generate_docs.py
+
+      - name: Update last commit record
+        if: steps.check-updates.outputs.has_updates == 'true'
+        run: |
+          echo "${{ steps.check-updates.outputs.latest_commit }}" > .last_commit
+          git add .last_commit
+
+          if ! git diff --staged --quiet; then
+            git commit -m "Update - commit ${{ steps.check-updates.outputs.latest_commit }}"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Deploy to GitHub Pages
+        if: steps.check-updates.outputs.has_updates == 'true'
+        run: |
+          mkdocs gh-deploy --force
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.check-updates.outputs.has_updates }}" = "true" ]; then
+            echo "Gallery updated and deployed successfully!"
+            echo "Latest commit: ${{ steps.check-updates.outputs.latest_commit }}"
+          else
+            echo "No updates found. Gallery is up to date."
+          fi
