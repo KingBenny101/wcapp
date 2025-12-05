@@ -50,7 +50,7 @@ jobs:
       - name: Get latest commit from source repository
         id: check-updates
         run: |
-          SOURCE_REPO="https://github.com/KingBenny101/wallpapers.git"
+          SOURCE_REPO="https://github.com/Incalculas/wallpapers.git"
 
           LATEST_COMMIT=$(git ls-remote $SOURCE_REPO HEAD | cut -f1)
           echo "latest_commit=$LATEST_COMMIT" >> $GITHUB_OUTPUT
@@ -74,7 +74,7 @@ jobs:
       - name: Clone and process source repository
         if: steps.check-updates.outputs.has_updates == 'true'
         run: |
-          SOURCE_REPO="https://github.com/KingBenny101/wallpapers.git"
+          SOURCE_REPO="https://github.com/Incalculas/wallpapers.git"
 
           git clone $SOURCE_REPO temp_source_repo
 
