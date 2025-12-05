@@ -1,4 +1,4 @@
-# RWall-Web
+# wcapp-web
 
 Automated wallpaper gallery website built with MkDocs Material and GitHub Actions.
 
