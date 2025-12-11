@@ -36,6 +36,8 @@ enum Commands {
     List,
     /// Remove all downloaded wallpapers
     Clean,
+    /// Uninstall wcapp from the system
+    Uninstall,
     /// Update wcapp to the latest version
     Update,
 }
@@ -48,6 +50,7 @@ fn main() -> Result<()> {
         Commands::Set { name, random } => commands::set::execute(name, random)?,
         Commands::List => commands::list::execute()?,
         Commands::Clean => commands::clean::execute()?,
+        Commands::Uninstall => commands::uninstall::execute()?,
         Commands::Update => commands::update::execute()?,
     }
 
