@@ -176,6 +176,16 @@ Are you sure? (y/N): y
 Successfully removed 156 wallpapers
 ```
 
+### Update wcapp
+
+Update to the latest version:
+
+```bash
+wcapp update
+```
+
+This downloads and runs the install script to update to the newest release.
+
 ## Examples
 
 ```bash
@@ -193,6 +203,9 @@ wcapp set --random
 
 # Remove all wallpapers (with confirmation)
 wcapp clean
+
+# Update to latest version
+wcapp update
 
 # Use custom directory (remembered for all future commands)
 wcapp fetch --destination ~/MyWallpapers

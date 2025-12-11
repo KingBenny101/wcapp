@@ -47,6 +47,8 @@ enum Commands {
     List,
     /// Remove all downloaded wallpapers
     Clean,
+    /// Update wcapp to the latest version
+    Update,
 }
 
 fn main() -> Result<()> {
@@ -71,6 +73,9 @@ fn main() -> Result<()> {
         }
         Commands::Clean => {
             clean_wallpapers()?;
+        }
+        Commands::Update => {
+            update_wcapp()?;
         }
     }
 
@@ -445,6 +450,53 @@ fn clean_wallpapers() -> Result<()> {
     fs::remove_dir_all(&wallpaper_dir).context("Failed to remove wallpaper directory")?;
 
     println!("Successfully removed {} wallpapers", count);
+
+    Ok(())
+}
+
+/// Update wcapp to the latest version
+fn update_wcapp() -> Result<()> {
+    println!("Updating wcapp to the latest version...");
+    println!();
+
+    #[cfg(target_os = "windows")]
+    {
+        let script_url = "https://raw.githubusercontent.com/KingBenny101/wcapp/master/install.ps1";
+        println!("Downloading update script...");
+
+        let status = Command::new("powershell")
+            .args([
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                &format!("irm {} | iex", script_url),
+            ])
+            .status()
+            .context("Failed to execute PowerShell. Make sure PowerShell is available.")?;
+
+        if !status.success() {
+            anyhow::bail!("Update failed");
+        }
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        let script_url = "https://raw.githubusercontent.com/KingBenny101/wcapp/master/install.sh";
+        println!("Downloading update script...");
+
+        let status = Command::new("sh")
+            .args(["-c", &format!("curl -fsSL {} | sh", script_url)])
+            .status()
+            .context("Failed to execute update script. Make sure curl and sh are available.")?;
+
+        if !status.success() {
+            anyhow::bail!("Update failed");
+        }
+    }
+
+    println!();
+    println!("Update complete! You may need to restart your terminal.");
 
     Ok(())
 }
