@@ -10,6 +10,12 @@ pub const WALLPAPER_REPO: &str = "https://github.com/Incalculas/wallpapers";
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     pub wallpaper_dir: PathBuf,
+    #[serde(default = "default_cycle_interval")]
+    pub cycle_interval: u64,
+}
+
+fn default_cycle_interval() -> u64 {
+    300 // 5 minutes
 }
 
 /// Get the path to the config file based on OS
