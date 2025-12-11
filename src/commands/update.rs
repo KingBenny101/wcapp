@@ -52,43 +52,38 @@ pub fn execute() -> Result<()> {
     #[cfg(target_os = "windows")]
     {
         let script_url = "https://raw.githubusercontent.com/KingBenny101/wcapp/master/install.ps1";
-        println!("Downloading update script...");
+        println!("Launching installer...");
+        println!("The update will continue after this process exits.");
+        println!();
 
-        let status = Command::new("powershell")
+        Command::new("powershell")
             .args([
                 "-NoProfile",
                 "-ExecutionPolicy",
                 "Bypass",
                 "-Command",
-                &format!("irm {} | iex", script_url),
+                &format!("Start-Sleep -Milliseconds 500; irm {} | iex", script_url),
             ])
-            .status()
+            .spawn()
             .context("Failed to execute PowerShell. Make sure PowerShell is available.")?;
 
-        if !status.success() {
-            anyhow::bail!("Update failed");
-        }
+        std::process::exit(0);
     }
 
     #[cfg(not(target_os = "windows"))]
     {
         let script_url = "https://raw.githubusercontent.com/KingBenny101/wcapp/master/install.sh";
-        println!("Downloading update script...");
+        println!("Launching installer...");
+        println!("The update will continue after this process exits.");
+        println!();
 
-        let status = Command::new("sh")
-            .args(["-c", &format!("curl -fsSL {} | sh", script_url)])
-            .status()
+        Command::new("sh")
+            .args(["-c", &format!("sleep 0.5; curl -fsSL {} | sh", script_url)])
+            .spawn()
             .context("Failed to execute update script. Make sure curl and sh are available.")?;
 
-        if !status.success() {
-            anyhow::bail!("Update failed");
-        }
+        std::process::exit(0);
     }
-
-    println!();
-    println!("Update complete! You may need to restart your terminal.");
-
-    Ok(())
 }
 
 /// Compare two semantic versions (simple implementation)

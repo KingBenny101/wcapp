@@ -72,17 +72,6 @@ read -r choice
 
 case "$choice" in
     1)
-        # Handle existing installation
-        if [ -f /usr/local/bin/wcapp ]; then
-            if [ -w /usr/local/bin ]; then
-                rm -f /usr/local/bin/wcapp_old 2>/dev/null
-                mv /usr/local/bin/wcapp /usr/local/bin/wcapp_old 2>/dev/null
-            else
-                sudo rm -f /usr/local/bin/wcapp_old 2>/dev/null
-                sudo mv /usr/local/bin/wcapp /usr/local/bin/wcapp_old 2>/dev/null
-            fi
-        fi
-        
         if [ -w /usr/local/bin ]; then
             mv wcapp /usr/local/bin/wcapp
             echo ""
@@ -97,12 +86,6 @@ case "$choice" in
         INSTALL_DIR="$HOME/.local/bin"
         if [ ! -d "$INSTALL_DIR" ]; then
             mkdir -p "$INSTALL_DIR"
-        fi
-        
-        # Handle existing installation
-        if [ -f "$INSTALL_DIR/wcapp" ]; then
-            rm -f "$INSTALL_DIR/wcapp_old" 2>/dev/null
-            mv "$INSTALL_DIR/wcapp" "$INSTALL_DIR/wcapp_old" 2>/dev/null
         fi
         
         mv wcapp "$INSTALL_DIR/wcapp"
