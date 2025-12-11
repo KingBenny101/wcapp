@@ -68,7 +68,7 @@ echo "3. Current directory"
 echo "4. Custom location"
 echo ""
 printf "Enter choice (1-4): "
-read -r choice
+read -r choice </dev/tty
 
 case "$choice" in
     1)
@@ -114,7 +114,7 @@ case "$choice" in
         ;;
     4)
         printf "Enter full path (e.g., /opt/bin/wcapp): "
-        read -r custom_path
+        read -r custom_path </dev/tty
         custom_dir=$(dirname "$custom_path")
         
         if [ ! -d "$custom_dir" ]; then
