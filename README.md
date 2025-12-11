@@ -160,13 +160,6 @@ Delete all downloaded wallpapers (requires confirmation):
 wcapp clean
 ```
 
-**What it does:**
-
-- Counts all wallpapers in your collection
-- Shows the total and directory location
-- Asks for confirmation before deletion
-- Removes the entire wallpaper directory
-
 Example interaction:
 
 ```
@@ -184,7 +177,21 @@ Update to the latest version:
 wcapp update
 ```
 
-This downloads and runs the install script to update to the newest release.
+The app checks for new versions and automatically downloads and installs the update.
+
+### Uninstall wcapp
+
+Remove wcapp from your system:
+
+```bash
+wcapp uninstall
+```
+
+You'll be prompted to choose what to remove:
+
+1. Just the wcapp binary
+2. Binary + configuration
+3. Binary + configuration + wallpapers
 
 ## Examples
 
@@ -207,6 +214,9 @@ wcapp clean
 # Update to latest version
 wcapp update
 
+# Uninstall wcapp
+wcapp uninstall
+
 # Use custom directory (remembered for all future commands)
 wcapp fetch --destination ~/MyWallpapers
 wcapp list  # Now looks in ~/MyWallpapers
@@ -226,13 +236,8 @@ Example config:
 wallpaper_dir = "C:\\Users\\YourName\\Pictures\\wcapp"
 ```
 
-## Details
-
 - **Wallpaper repository**: https://github.com/Incalculas/wallpapers (hardcoded)
 - **Default wallpaper directory by OS:**
   - **Windows**: `%USERPROFILE%\Pictures\wcapp`
   - **macOS**: `~/Pictures/wcapp`
   - **Linux**: `~/Pictures/wcapp`
-- **Category structure preserved**: The app maintains the `classified/` folder organization
-- **Supported formats**: jpg, jpeg, png, bmp, gif, webp
-- **Persistent settings**: Your chosen directory is remembered across sessions
