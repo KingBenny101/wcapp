@@ -103,12 +103,18 @@ jobs:
         with:
           path: artifacts
 
+      - name: Prepare release files
+        run: |
+          mkdir -p release
+          find artifacts -type f -exec cp {} release/ \;
+          ls -la release/
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ needs.check-version.outputs.version }}
           name: Release ${{ needs.check-version.outputs.version }}
-          files: artifacts/**/*
+          files: release/*
           draft: false
           prerelease: false
           generate_release_notes: true
