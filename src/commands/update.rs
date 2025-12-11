@@ -53,16 +53,21 @@ pub fn execute() -> Result<()> {
     {
         let script_url = "https://raw.githubusercontent.com/KingBenny101/wcapp/master/install.ps1";
         println!("Launching installer...");
-        println!("The update will continue after this process exits.");
+        println!("The update will continue in a new window after this process exits.");
         println!();
 
         Command::new("powershell")
             .args([
-                "-NoProfile",
                 "-ExecutionPolicy",
                 "Bypass",
                 "-Command",
-                &format!("Start-Sleep -Milliseconds 500; irm {} | iex", script_url),
+                &format!(
+                    "Start-Sleep -Milliseconds 500; \
+                     $host.UI.RawUI.WindowTitle = 'wcapp Installer'; \
+                     irm {} | iex; \
+                     pause",
+                    script_url
+                ),
             ])
             .spawn()
             .context("Failed to execute PowerShell. Make sure PowerShell is available.")?;
