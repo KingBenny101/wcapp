@@ -57,19 +57,23 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             binary_name: wcapp.exe
-            artifact_name: wcapp-windows-x86_64.exe
+            artifact_name: windows-x86_64
+            release_name: wcapp-windows-x86_64.exe
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             binary_name: wcapp
-            artifact_name: wcapp-linux-x86_64
+            artifact_name: linux-x86_64
+            release_name: wcapp-linux-x86_64
           - os: macos-latest
             target: x86_64-apple-darwin
             binary_name: wcapp
-            artifact_name: wcapp-macos-x86_64
+            artifact_name: macos-x86_64
+            release_name: wcapp-macos-x86_64
           - os: macos-latest
             target: aarch64-apple-darwin
             binary_name: wcapp
-            artifact_name: wcapp-macos-aarch64
+            artifact_name: macos-aarch64
+            release_name: wcapp-macos-aarch64
 
     steps:
       - name: Checkout code
@@ -106,7 +110,11 @@ jobs:
       - name: Prepare release files
         run: |
           mkdir -p release
-          find artifacts -type f -exec cp {} release/ \;
+          # Copy and rename each binary from its artifact folder
+          cp artifacts/windows-x86_64/wcapp.exe release/wcapp-windows-x86_64.exe
+          cp artifacts/linux-x86_64/wcapp release/wcapp-linux-x86_64
+          cp artifacts/macos-x86_64/wcapp release/wcapp-macos-x86_64
+          cp artifacts/macos-aarch64/wcapp release/wcapp-macos-aarch64
           ls -la release/
 
       - name: Create Release

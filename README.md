@@ -14,34 +14,33 @@ A cross-platform CLI tool to fetch and set wallpapers from the Incalculas wallpa
 
 ## Installation
 
-### Quick Install (macOS/Linux)
+### Quick Install
+
+**Windows (PowerShell):**
+
+```powershell
+irm https://raw.githubusercontent.com/KingBenny101/wcapp/master/install.ps1 | iex
+```
+
+**macOS/Linux:**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/KingBenny101/wcapp/master/install.sh | sh
 ```
 
-This automatically detects your platform and installs the latest version.
+These scripts automatically download and install the latest version for your platform.
 
 ### Manual Installation
 
 #### Windows
 
 1. Download `wcapp-windows-x86_64.exe` from [releases](https://github.com/KingBenny101/wcapp/releases/latest)
-2. Rename to `wcapp.exe` (optional)
+2. Rename to `wcapp.exe`
 3. Add to PATH or run from current directory
 
 #### macOS/Linux
 
 Download for your platform:
-
-```bash
-# Auto-detect and install
-curl -L https://github.com/KingBenny101/wcapp/releases/latest/download/wcapp-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m) -o wcapp
-chmod +x wcapp
-sudo mv wcapp /usr/local/bin/
-```
-
-Or manually:
 
 **macOS (Intel):**
 
