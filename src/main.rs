@@ -34,6 +34,16 @@ enum Commands {
     },
     /// List all available wallpapers
     List,
+    /// Cycle through wallpapers at a given interval
+    Cycle {
+        /// Interval in seconds (default: from config or 300)
+        #[arg(short, long)]
+        interval: Option<u64>,
+
+        /// Save the interval as default in config
+        #[arg(short = 'd', long)]
+        set_default: bool,
+    },
     /// Remove all downloaded wallpapers
     Clean,
     /// Uninstall wcapp from the system
@@ -49,6 +59,10 @@ fn main() -> Result<()> {
         Commands::Fetch { destination } => commands::fetch::execute(destination)?,
         Commands::Set { name, random } => commands::set::execute(name, random)?,
         Commands::List => commands::list::execute()?,
+        Commands::Cycle {
+            interval,
+            set_default,
+        } => commands::cycle::execute(interval, set_default)?,
         Commands::Clean => commands::clean::execute()?,
         Commands::Uninstall => commands::uninstall::execute()?,
         Commands::Update => commands::update::execute()?,

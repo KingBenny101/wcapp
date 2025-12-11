@@ -78,8 +78,10 @@ pub fn execute(destination: Option<PathBuf>) -> Result<()> {
         dest_dir.display()
     );
 
+    let existing_config = config::load_config();
     let config = Config {
         wallpaper_dir: dest_dir.clone(),
+        cycle_interval: existing_config.map(|c| c.cycle_interval).unwrap_or(300),
     };
     config::save_config(&config)?;
 
