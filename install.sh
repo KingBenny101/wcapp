@@ -4,6 +4,15 @@
 
 set -e
 
+# Redirect stdin to terminal to allow interactive prompts when piped
+if [ -t 0 ]; then
+    # Already interactive
+    :
+else
+    # Being piped, redirect to tty
+    exec < /dev/tty
+fi
+
 echo "wcapp Installer"
 echo ""
 
@@ -68,7 +77,7 @@ echo "3. Current directory"
 echo "4. Custom location"
 echo ""
 printf "Enter choice (1-4): "
-read -r choice </dev/tty
+read -r choice
 
 case "$choice" in
     1)
@@ -114,7 +123,7 @@ case "$choice" in
         ;;
     4)
         printf "Enter full path (e.g., /opt/bin/wcapp): "
-        read -r custom_path </dev/tty
+        read -r custom_path
         custom_dir=$(dirname "$custom_path")
         
         if [ ! -d "$custom_dir" ]; then
