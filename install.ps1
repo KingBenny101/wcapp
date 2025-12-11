@@ -50,7 +50,16 @@ switch ($choice) {
             New-Item -ItemType Directory -Path $installDir -Force | Out-Null
         }
         
-        # Copy binary
+        # Handle existing installation - rename old binary if it exists
+        if (Test-Path $installPath) {
+            $oldPath = "$installDir\wcapp_old.exe"
+            if (Test-Path $oldPath) {
+                Remove-Item $oldPath -Force -ErrorAction SilentlyContinue
+            }
+            Move-Item $installPath $oldPath -Force -ErrorAction SilentlyContinue
+        }
+        
+        # Copy new binary
         Copy-Item $output $installPath -Force
         
         # Add to PATH
@@ -78,7 +87,16 @@ switch ($choice) {
             New-Item -ItemType Directory -Path $installDir -Force | Out-Null
         }
         
-        # Copy binary
+        # Handle existing installation - rename old binary if it exists
+        if (Test-Path $installPath) {
+            $oldPath = "$installDir\wcapp_old.exe"
+            if (Test-Path $oldPath) {
+                Remove-Item $oldPath -Force -ErrorAction SilentlyContinue
+            }
+            Move-Item $installPath $oldPath -Force -ErrorAction SilentlyContinue
+        }
+        
+        # Copy new binary
         Copy-Item $output $installPath -Force
         
         # Add to user PATH
