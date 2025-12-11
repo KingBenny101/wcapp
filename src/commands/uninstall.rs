@@ -33,13 +33,13 @@ pub fn execute() -> Result<()> {
             remove_binary(&current_exe)?;
         }
         "2" => {
-            remove_binary(&current_exe)?;
             remove_config()?;
+            remove_binary(&current_exe)?;
         }
         "3" => {
-            remove_binary(&current_exe)?;
             remove_config()?;
             remove_wallpapers()?;
+            remove_binary(&current_exe)?;
         }
         "4" => {
             println!("Uninstall cancelled");
@@ -60,6 +60,22 @@ pub fn execute() -> Result<()> {
     {
         if let Some(parent) = current_exe.parent() {
             println!("Directory: {}", parent.display());
+
+            // Launch batch script to delete the binary after exit
+            let batch_script = parent.join("uninstall_wcapp.bat");
+            if batch_script.exists() {
+                std::process::Command::new("cmd")
+                    .args([
+                        "/C",
+                        "start",
+                        "/MIN",
+                        "cmd",
+                        "/C",
+                        batch_script.to_str().unwrap(),
+                    ])
+                    .spawn()
+                    .ok();
+            }
         }
     }
 
@@ -88,20 +104,15 @@ fn remove_binary(exe_path: &PathBuf) -> Result<()> {
 
         let script_content = format!(
             "@echo off\r\n\
-             timeout /t 1 /nobreak >nul\r\n\
-             del /f /q \"{}\"\r\n\
-             del /f /q \"%~f0\"\r\n",
+             timeout /t 2 /nobreak >nul 2>&1\r\n\
+             del /f /q \"{}\" >nul 2>&1\r\n\
+             del /f /q \"%~f0\" >nul 2>&1\r\n",
             exe_path.display()
         );
 
         fs::write(&batch_script, script_content).context("Failed to create uninstall script")?;
 
-        std::process::Command::new("cmd")
-            .args(["/C", "start", "/B", batch_script.to_str().unwrap()])
-            .spawn()
-            .context("Failed to launch uninstall script")?;
-
-        println!("✓ Scheduled binary removal");
+        println!("✓ Binary removal scheduled");
     }
 
     #[cfg(not(target_os = "windows"))]
