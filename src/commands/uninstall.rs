@@ -106,6 +106,28 @@ fn remove_binary(exe_path: &PathBuf) -> Result<()> {
 
     #[cfg(not(target_os = "windows"))]
     {
+        use std::process::Command;
+
+        // Check if we can write to the binary's directory
+        if let Some(parent) = exe_path.parent() {
+            if let Ok(metadata) = fs::metadata(parent) {
+                use std::os::unix::fs::PermissionsExt;
+                let permissions = metadata.permissions();
+                let can_write = permissions.mode() & 0o200 != 0; // Check write permission
+
+                if !can_write || exe_path.starts_with("/usr") {
+                    println!();
+                    println!(
+                        "✗ Insufficient permissions to remove {}",
+                        exe_path.display()
+                    );
+                    println!("Please run with sudo:");
+                    println!("  sudo {} uninstall", exe_path.display());
+                    return Ok(());
+                }
+            }
+        }
+
         fs::remove_file(exe_path).context("Failed to remove binary")?;
         println!("✓ Binary removed");
     }
