@@ -152,6 +152,35 @@ Let the app choose a random wallpaper:
 wcapp set --random
 ```
 
+### Cycle Wallpapers
+
+Automatically cycle through wallpapers at a specified interval:
+
+```bash
+wcapp cycle --interval 300
+```
+
+The interval is in seconds (default: 300 seconds = 5 minutes). The command runs continuously, changing the wallpaper at the specified interval.
+
+To save the interval as your default:
+
+```bash
+wcapp cycle --interval 600 --set-default
+```
+
+To use the saved default interval:
+
+```bash
+wcapp cycle
+```
+
+**Note**: This command runs in the foreground. Press Ctrl+C to stop cycling.
+
+To run in the background:
+
+- **Windows**: Use Task Scheduler or run in a detached PowerShell window
+- **macOS/Linux**: Use `nohup wcapp cycle &` or run in a screen/tmux session
+
 ### Remove All Wallpapers
 
 Delete all downloaded wallpapers (requires confirmation):
@@ -208,6 +237,12 @@ wcapp set --name "Nature/beach.jpg"
 # Set a random wallpaper
 wcapp set --random
 
+# Cycle through wallpapers every 10 minutes
+wcapp cycle --interval 600
+
+# Cycle with custom interval and save as default
+wcapp cycle --interval 900 --set-default
+
 # Remove all wallpapers (with confirmation)
 wcapp clean
 
@@ -224,7 +259,7 @@ wcapp list  # Now looks in ~/MyWallpapers
 
 ## Configuration
 
-The app remembers your wallpaper directory in a config file:
+The app remembers your wallpaper directory and cycle interval in a config file:
 
 - **Windows**: `%APPDATA%\wcapp\config.toml`
 - **macOS**: `~/Library/Application Support/wcapp/config.toml`
@@ -234,6 +269,7 @@ Example config:
 
 ```toml
 wallpaper_dir = "C:\\Users\\YourName\\Pictures\\wcapp"
+cycle_interval = 600  # seconds
 ```
 
 - **Wallpaper repository**: https://github.com/Incalculas/wallpapers (hardcoded)

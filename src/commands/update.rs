@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use std::fs;
 use std::process::Command;
 
 /// Update wcapp to the latest version
@@ -52,42 +53,82 @@ pub fn execute() -> Result<()> {
     #[cfg(target_os = "windows")]
     {
         let script_url = "https://raw.githubusercontent.com/KingBenny101/wcapp/master/install.ps1";
-        println!("Launching installer...");
-        println!("The update will continue in a new window after this process exits.");
-        println!();
+        let current_pid = std::process::id();
 
+        let temp_dir = std::env::temp_dir();
+        let script_path = temp_dir.join("wcapp_update.bat");
+
+        let script_content = format!(
+            r#"@echo off
+title wcapp Updater
+echo Waiting for wcapp to close...
+:wait
+tasklist /FI "PID eq {}" 2>NUL | find "{}" >NUL
+if %ERRORLEVEL% EQU 0 (
+    timeout /t 1 /nobreak >NUL
+    goto wait
+)
+echo Downloading update...
+powershell -ExecutionPolicy Bypass -Command "irm {} | iex"
+pause
+del "%~f0"
+"#,
+            current_pid, current_pid, script_url
+        );
+
+        fs::write(&script_path, script_content).context("Failed to create update script")?;
+
+        // Launch the batch script elevated
         Command::new("powershell")
             .args([
-                "-ExecutionPolicy",
-                "Bypass",
                 "-Command",
                 &format!(
-                    "Start-Sleep -Milliseconds 500; \
-                     $host.UI.RawUI.WindowTitle = 'wcapp Installer'; \
-                     irm {} | iex; \
-                     pause",
-                    script_url
+                    "Start-Process -FilePath '{}' -Verb RunAs",
+                    script_path.to_str().unwrap()
                 ),
             ])
             .spawn()
-            .context("Failed to execute PowerShell. Make sure PowerShell is available.")?;
+            .context("Failed to launch update script")?;
 
+        println!("Update will continue in an elevated window after this process exits.");
         std::process::exit(0);
     }
 
     #[cfg(not(target_os = "windows"))]
     {
         let script_url = "https://raw.githubusercontent.com/KingBenny101/wcapp/master/install.sh";
-        println!("Launching installer...");
-        println!("The update will continue after this process exits.");
-        println!();
+        let current_pid = std::process::id();
 
-        Command::new("sh")
-            .args(["-c", &format!("sleep 0.5; curl -fsSL {} | sh", script_url)])
-            .spawn()
-            .context("Failed to execute update script. Make sure curl and sh are available.")?;
+        let temp_dir = std::env::temp_dir();
+        let script_path = temp_dir.join("wcapp_update.sh");
 
-        std::process::exit(0);
+        let script_content = format!(
+            r#"#!/bin/sh
+while kill -0 {} 2>/dev/null; do
+    sleep 1
+done
+curl -fsSL {} | sh
+rm -f "$0"
+"#,
+            current_pid, script_url
+        );
+
+        fs::write(&script_path, script_content).context("Failed to create update script")?;
+
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mut perms = fs::metadata(&script_path)?.permissions();
+            perms.set_mode(0o755);
+            fs::set_permissions(&script_path, perms)?;
+        }
+
+        use std::os::unix::process::CommandExt;
+        println!("Running installer in this terminal after wcapp exits...");
+        // Replace current process with the update script (so prompts work)
+        Command::new("sh").arg(&script_path).exec();
+        // If exec fails:
+        anyhow::bail!("Failed to launch update script");
     }
 }
 
