@@ -326,26 +326,37 @@ fn set_wallpaper(name: &str) -> Result<()> {
 fn set_random_wallpaper() -> Result<()> {
     let wallpaper_dir = get_wallpaper_dir()?;
 
+    // Check if directory exists
+    if !wallpaper_dir.exists() {
+        println!("No wallpapers found. Use 'fetch' command to download wallpapers first.");
+        return Ok(());
+    }
+
     println!("Selecting random wallpaper...");
 
     let image_extensions = ["jpg", "jpeg", "png", "bmp", "gif", "webp"];
     let mut wallpapers = Vec::new();
 
-    for entry in fs::read_dir(&wallpaper_dir).context("Failed to read wallpaper directory")? {
-        let entry = entry?;
+    // Use WalkDir to recursively search through category folders
+    for entry in WalkDir::new(&wallpaper_dir)
+        .follow_links(true)
+        .into_iter()
+        .filter_map(|e| e.ok())
+    {
         let path = entry.path();
 
         if path.is_file() {
             if let Some(ext) = path.extension() {
                 if image_extensions.contains(&ext.to_str().unwrap_or("").to_lowercase().as_str()) {
-                    wallpapers.push(path);
+                    wallpapers.push(path.to_path_buf());
                 }
             }
         }
     }
 
     if wallpapers.is_empty() {
-        anyhow::bail!("No wallpapers found. Use 'fetch' command to download wallpapers first.");
+        println!("No wallpapers found. Use 'fetch' command to download wallpapers first.");
+        return Ok(());
     }
 
     let mut rng = rand::thread_rng();
