@@ -14,62 +14,76 @@ A cross-platform CLI tool to fetch and set wallpapers from the Incalculas wallpa
 
 ## Installation
 
-### Option 1: Download Pre-built Binary (Easiest)
-
-Download the latest release for your platform from [GitHub Releases](https://github.com/KingBenny101/wcapp/releases/latest):
-
-**Windows:**
-
-1. Download `wcapp-windows-x86_64.exe`
-2. Rename to `wcapp.exe` (optional)
-3. Move to a directory in your PATH, or run from current location
-
-**macOS:**
+### Quick Install (macOS/Linux)
 
 ```bash
-# Intel Mac
-curl -L https://github.com/KingBenny101/wcapp/releases/latest/download/wcapp-macos-x86_64 -o wcapp
-chmod +x wcapp
-sudo mv wcapp /usr/local/bin/
+curl -fsSL https://raw.githubusercontent.com/KingBenny101/wcapp/master/install.sh | sh
+```
 
-# Apple Silicon (M1/M2)
-curl -L https://github.com/KingBenny101/wcapp/releases/latest/download/wcapp-macos-aarch64 -o wcapp
+This automatically detects your platform and installs the latest version.
+
+### Manual Installation
+
+#### Windows
+
+1. Download `wcapp-windows-x86_64.exe` from [releases](https://github.com/KingBenny101/wcapp/releases/latest)
+2. Rename to `wcapp.exe` (optional)
+3. Add to PATH or run from current directory
+
+#### macOS/Linux
+
+Download for your platform:
+
+```bash
+# Auto-detect and install
+curl -L https://github.com/KingBenny101/wcapp/releases/latest/download/wcapp-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m) -o wcapp
 chmod +x wcapp
 sudo mv wcapp /usr/local/bin/
+```
+
+Or manually:
+
+**macOS (Intel):**
+
+```bash
+curl -L https://github.com/KingBenny101/wcapp/releases/latest/download/wcapp-macos-x86_64 -o wcapp
+chmod +x wcapp && sudo mv wcapp /usr/local/bin/
+```
+
+**macOS (Apple Silicon):**
+
+```bash
+curl -L https://github.com/KingBenny101/wcapp/releases/latest/download/wcapp-macos-aarch64 -o wcapp
+chmod +x wcapp && sudo mv wcapp /usr/local/bin/
 ```
 
 **Linux:**
 
 ```bash
 curl -L https://github.com/KingBenny101/wcapp/releases/latest/download/wcapp-linux-x86_64 -o wcapp
-chmod +x wcapp
-sudo mv wcapp /usr/local/bin/
+chmod +x wcapp && sudo mv wcapp /usr/local/bin/
 ```
 
-### Option 2: Install with Cargo (For Rust Users)
+### Alternative Methods
+
+**With Cargo (Rust required):**
 
 ```bash
 cargo install --git https://github.com/KingBenny101/wcapp
 ```
 
-This installs `wcapp` globally and makes it available from anywhere in your terminal.
-
-### Option 3: Build from Source
-
-Clone the repository and build:
+**Build from Source:**
 
 ```bash
 git clone https://github.com/KingBenny101/wcapp
 cd wcapp
 cargo build --release
+# Binary at: target/release/wcapp
 ```
-
-The executable will be at `target/release/wcapp` (or `wcapp.exe` on Windows).
 
 **Requirements:**
 
-- Git (for fetching wallpapers - required for all options)
-- Rust toolchain (only for Options 2 & 3 - install from [rustup.rs](https://rustup.rs))
+- Git (for fetching wallpapers)
 
 ## Commands
 
