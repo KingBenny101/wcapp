@@ -56,20 +56,20 @@ jobs:
         include:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact_name: wcapp.exe
-            asset_name: wcapp-windows-x86_64.exe
+            binary_name: wcapp.exe
+            artifact_name: wcapp-windows-x86_64.exe
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            artifact_name: wcapp
-            asset_name: wcapp-linux-x86_64
+            binary_name: wcapp
+            artifact_name: wcapp-linux-x86_64
           - os: macos-latest
             target: x86_64-apple-darwin
-            artifact_name: wcapp
-            asset_name: wcapp-macos-x86_64
+            binary_name: wcapp
+            artifact_name: wcapp-macos-x86_64
           - os: macos-latest
             target: aarch64-apple-darwin
-            artifact_name: wcapp
-            asset_name: wcapp-macos-aarch64
+            binary_name: wcapp
+            artifact_name: wcapp-macos-aarch64
 
     steps:
       - name: Checkout code
@@ -86,8 +86,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.asset_name }}
-          path: target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
+          name: ${{ matrix.artifact_name }}
+          path: target/${{ matrix.target }}/release/${{ matrix.binary_name }}
 
   release:
     name: Create Release
@@ -113,7 +113,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ needs.check-version.outputs.version }}
-          name: Release ${{ needs.check-version.outputs.version }}
+          name: wcapp ${{ needs.check-version.outputs.version }}
           files: release/*
           draft: false
           prerelease: false
