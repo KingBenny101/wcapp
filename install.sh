@@ -152,3 +152,4 @@ esac
 
 echo ""
 echo "Installation complete! Run 'wcapp --help' to get started."
+exit 0
