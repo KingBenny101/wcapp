@@ -17,3 +17,4 @@ serde_json = "1.0"
 chrono = "0.4"
 
 self-github-update-enhanced = "0.39"
+self-replace = "1.3"
