@@ -59,31 +59,11 @@ jobs:
             binary_name: wcapp.exe
             artifact_name: windows-x86_64
             release_name: wcapp-x86_64-pc-windows-msvc.exe
-          - os: windows-latest
-            target: aarch64-pc-windows-msvc
-            binary_name: wcapp.exe
-            artifact_name: windows-arm64
-            release_name: wcapp-aarch64-pc-windows-msvc.exe
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             binary_name: wcapp
             artifact_name: linux-x86_64
             release_name: wcapp-x86_64-unknown-linux-gnu
-          - os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            binary_name: wcapp
-            artifact_name: linux-arm64
-            release_name: wcapp-aarch64-unknown-linux-gnu
-          - os: ubuntu-latest
-            target: i686-unknown-linux-gnu
-            binary_name: wcapp
-            artifact_name: linux-i686
-            release_name: wcapp-i686-unknown-linux-gnu
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-musl
-            binary_name: wcapp
-            artifact_name: linux-musl-x86_64
-            release_name: wcapp-x86_64-unknown-linux-musl
           - os: macos-latest
             target: x86_64-apple-darwin
             binary_name: wcapp
@@ -108,16 +88,10 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-multilib musl-tools gcc-x86-64-linux-gnu musl-dev
-          # Create symlink for musl cross-compiler that ring expects
-          sudo ln -sf /usr/bin/musl-gcc /usr/bin/x86_64-linux-musl-gcc
+          sudo apt-get install -y gcc-multilib
 
       - name: Build release binary
         run: cargo build --release --target ${{ matrix.target }}
-
-      - name: Build release binary (musl)
-        if: matrix.target == 'x86_64-unknown-linux-musl'
-        run: CC=musl-gcc cargo build --release --target ${{ matrix.target }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -144,11 +118,7 @@ jobs:
           mkdir -p release
           # Copy and rename each binary from its artifact folder
           cp artifacts/windows-x86_64/wcapp.exe release/wcapp-x86_64-pc-windows-msvc.exe
-          cp artifacts/windows-arm64/wcapp.exe release/wcapp-aarch64-pc-windows-msvc.exe
           cp artifacts/linux-x86_64/wcapp release/wcapp-x86_64-unknown-linux-gnu
-          cp artifacts/linux-arm64/wcapp release/wcapp-aarch64-unknown-linux-gnu
-          cp artifacts/linux-i686/wcapp release/wcapp-i686-unknown-linux-gnu
-          cp artifacts/linux-musl-x86_64/wcapp release/wcapp-x86_64-unknown-linux-musl
           cp artifacts/macos-x86_64/wcapp release/wcapp-x86_64-apple-darwin
           cp artifacts/macos-aarch64/wcapp release/wcapp-aarch64-apple-darwin
           ls -la release/
