@@ -23,7 +23,11 @@ ARCH=$(uname -m)
 case "$OS" in
     Linux*)
         if [ "$ARCH" = "x86_64" ]; then
-            BINARY="wcapp-linux-x86_64"
+            BINARY="wcapp-x86_64-unknown-linux-gnu"
+        elif [ "$ARCH" = "aarch64" ]; then
+            BINARY="wcapp-aarch64-unknown-linux-gnu"
+        elif [ "$ARCH" = "i686" ]; then
+            BINARY="wcapp-i686-unknown-linux-gnu"
         else
             echo "✗ Unsupported architecture: $ARCH"
             exit 1
@@ -31,9 +35,9 @@ case "$OS" in
         ;;
     Darwin*)
         if [ "$ARCH" = "arm64" ]; then
-            BINARY="wcapp-macos-aarch64"
+            BINARY="wcapp-aarch64-apple-darwin"
         elif [ "$ARCH" = "x86_64" ]; then
-            BINARY="wcapp-macos-x86_64"
+            BINARY="wcapp-x86_64-apple-darwin"
         else
             echo "✗ Unsupported architecture: $ARCH"
             exit 1
@@ -71,27 +75,20 @@ echo ""
 
 # Installation options
 echo "Where would you like to install wcapp?"
-echo "1. /usr/local/bin (recommended, requires sudo)"
-echo "2. ~/.local/bin (user install, no sudo needed)"
-echo "3. Current directory"
-echo "4. Custom location"
+echo "1. ~/.local/bin (recommended, user install)"
+echo "2. Current directory"
+echo "3. Custom location"
 echo ""
-printf "Enter choice (1-4): "
+printf "Enter choice (1-3) [1]: "
 read -r choice
+
+# Default to option 1 if empty
+if [ -z "$choice" ]; then
+    choice="1"
+fi
 
 case "$choice" in
     1)
-        if [ -w /usr/local/bin ]; then
-            mv wcapp /usr/local/bin/wcapp
-            echo ""
-            echo "✓ wcapp installed to /usr/local/bin/wcapp"
-        else
-            sudo mv wcapp /usr/local/bin/wcapp
-            echo ""
-            echo "✓ wcapp installed to /usr/local/bin/wcapp"
-        fi
-        ;;
-    2)
         INSTALL_DIR="$HOME/.local/bin"
         if [ ! -d "$INSTALL_DIR" ]; then
             mkdir -p "$INSTALL_DIR"
@@ -113,16 +110,14 @@ case "$choice" in
                 ;;
         esac
         ;;
-    3)
+    2)
         echo ""
         echo "✓ wcapp downloaded to current directory"
         echo ""
         echo "Run with: ./wcapp"
-        echo "To install globally later, run:"
-        echo "  sudo mv wcapp /usr/local/bin/wcapp"
         ;;
-    4)
-        printf "Enter full path (e.g., /opt/bin/wcapp): "
+    3)
+        printf "Enter full path (e.g., ~/bin/wcapp): "
         read -r custom_path
         custom_dir=$(dirname "$custom_path")
         
@@ -131,11 +126,7 @@ case "$choice" in
             mkdir -p "$custom_dir"
         fi
         
-        if [ -w "$custom_dir" ]; then
-            mv wcapp "$custom_path"
-        else
-            sudo mv wcapp "$custom_path"
-        fi
+        mv wcapp "$custom_path"
         
         echo ""
         echo "✓ wcapp installed to $custom_path"

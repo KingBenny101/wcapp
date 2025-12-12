@@ -6,8 +6,21 @@ $ErrorActionPreference = "Stop"
 Write-Host "wcapp Installer"
 Write-Host ""
 
-# Download URL
-$url = "https://github.com/KingBenny101/wcapp/releases/latest/download/wcapp-windows-x86_64.exe"
+# Detect architecture
+$arch = $env:PROCESSOR_ARCHITECTURE
+if ($arch -eq "AMD64") {
+    $url = "https://github.com/KingBenny101/wcapp/releases/latest/download/wcapp-x86_64-pc-windows-msvc.exe"
+}
+elseif ($arch -eq "ARM64") {
+    $url = "https://github.com/KingBenny101/wcapp/releases/latest/download/wcapp-aarch64-pc-windows-msvc.exe"
+}
+else {
+    Write-Host "✗ Unsupported architecture: $arch"
+    exit 1
+}
+
+Write-Host "Detected: Windows $arch"
+Write-Host ""
 $output = "$env:TEMP\wcapp.exe"
 
 Write-Host "Downloading wcapp..."
@@ -22,53 +35,20 @@ catch {
 
 Write-Host ""
 Write-Host "Where would you like to install wcapp?"
-Write-Host "1. C:\Program Files\wcapp (recommended, requires admin, adds to PATH)"
-Write-Host "2. $env:LOCALAPPDATA\Programs\wcapp (user install, no admin needed)"
-Write-Host "3. Current directory"
-Write-Host "4. Custom location"
+Write-Host "1. $env:LOCALAPPDATA\Programs\wcapp (recommended, user install)"
+Write-Host "2. Current directory"
+Write-Host "3. Custom location"
 Write-Host ""
 
-$choice = Read-Host "Enter choice (1-4)"
+$choice = Read-Host "Enter choice (1-3) [1]"
+
+# Default to option 1 if empty
+if (-not $choice) {
+    $choice = "1"
+}
 
 switch ($choice) {
     "1" {
-        # Check if running as admin
-        $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-        
-        if (-not $isAdmin) {
-            Write-Host ""
-            Write-Host "✗ Administrator privileges required for this option"
-            Write-Host "Please run PowerShell as Administrator and try again"
-            exit 1
-        }
-        
-        $installDir = "C:\Program Files\wcapp"
-        $installPath = "$installDir\wcapp.exe"
-        
-        # Create directory
-        if (-not (Test-Path $installDir)) {
-            New-Item -ItemType Directory -Path $installDir -Force | Out-Null
-        }
-        
-        Copy-Item $output $installPath -Force
-        
-        # Add to PATH
-        $currentPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
-        if ($currentPath -notlike "*$installDir*") {
-            [Environment]::SetEnvironmentVariable("Path", "$currentPath;$installDir", "Machine")
-            Write-Host ""
-            Write-Host "✓ wcapp installed to $installPath"
-            Write-Host "✓ Added to system PATH"
-            Write-Host ""
-            Write-Host "Please restart your terminal or run:"
-            Write-Host "  `$env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User')"
-        }
-        else {
-            Write-Host ""
-            Write-Host "✓ wcapp installed to $installPath"
-        }
-    }
-    "2" {
         $installDir = "$env:LOCALAPPDATA\Programs\wcapp"
         $installPath = "$installDir\wcapp.exe"
         
@@ -95,16 +75,15 @@ switch ($choice) {
             Write-Host "✓ wcapp installed to $installPath"
         }
     }
-    "3" {
+    "2" {
         $installPath = ".\wcapp.exe"
         Copy-Item $output $installPath -Force
         Write-Host ""
         Write-Host "✓ wcapp downloaded to current directory"
         Write-Host ""
         Write-Host "Run with: .\wcapp"
-        Write-Host "To install globally later, move to a directory in PATH"
     }
-    "4" {
+    "3" {
         $customPath = Read-Host "Enter full path (e.g., C:\tools\wcapp.exe)"
         $customDir = Split-Path $customPath -Parent
         
