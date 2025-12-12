@@ -108,10 +108,16 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-multilib
+          sudo apt-get install -y gcc-multilib musl-tools gcc-x86-64-linux-gnu musl-dev
+          # Create symlink for musl cross-compiler that ring expects
+          sudo ln -sf /usr/bin/musl-gcc /usr/bin/x86_64-linux-musl-gcc
 
       - name: Build release binary
         run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Build release binary (musl)
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: CC=musl-gcc cargo build --release --target ${{ matrix.target }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
