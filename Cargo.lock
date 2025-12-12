@@ -2038,6 +2038,7 @@ dependencies = [
  "rand 0.8.5",
  "reqwest",
  "self-github-update-enhanced",
+ "self-replace",
  "serde",
  "serde_json",
  "toml",

@@ -5,6 +5,7 @@ use std::io::{self, Write};
 use std::path::PathBuf;
 
 use crate::config;
+use self_replace;
 
 pub fn execute() -> Result<()> {
     println!("wcapp Uninstaller");
@@ -28,18 +29,23 @@ pub fn execute() -> Result<()> {
     io::stdin().read_line(&mut input)?;
     let choice = input.trim();
 
+    let mut remove_binary_requested = false;
+
     match choice {
         "1" => {
             remove_binary(&current_exe)?;
+            remove_binary_requested = true;
         }
         "2" => {
             remove_config()?;
             remove_binary(&current_exe)?;
+            remove_binary_requested = true;
         }
         "3" => {
             remove_config()?;
             remove_wallpapers()?;
             remove_binary(&current_exe)?;
+            remove_binary_requested = true;
         }
         "4" => {
             println!("Uninstall cancelled");
@@ -54,32 +60,30 @@ pub fn execute() -> Result<()> {
     println!();
     println!("Uninstall complete!");
     println!();
-    println!("Note: You may need to manually remove the installation directory from PATH");
-
     #[cfg(target_os = "windows")]
     {
-        if let Some(parent) = current_exe.parent() {
-            println!("Directory: {}", parent.display());
-
-            // Launch batch script to delete the binary after exit
-            let batch_script = parent.join("uninstall_wcapp.bat");
-            if batch_script.exists() {
-                std::process::Command::new("cmd")
-                    .args([
-                        "/C",
-                        "start",
-                        "/MIN",
-                        "cmd",
-                        "/C",
-                        batch_script.to_str().unwrap(),
-                    ])
-                    .spawn()
-                    .ok();
-            }
-        }
+        println!("Note: You may need to manually remove the installation directory from PATH");
+        println!("      Go to System Properties > Environment Variables > Path");
+    }
+    #[cfg(target_os = "macos")]
+    {
+        println!("Note: You may need to manually remove the installation directory from PATH");
+        println!("      Edit ~/.zshrc or ~/.bash_profile and remove the directory from PATH");
+    }
+    #[cfg(target_os = "linux")]
+    {
+        println!("Note: You may need to manually remove the installation directory from PATH");
+        println!("      Edit ~/.bashrc or ~/.profile and remove the directory from PATH");
     }
 
-    std::process::exit(0);
+    // If binary removal was requested, delete it now (this will exit the process)
+    if remove_binary_requested {
+        println!("Removing binary...");
+        self_replace::self_delete().context("Failed to remove binary")?;
+        // This line will never be reached - self_delete() exits the process
+    }
+
+    Ok(())
 }
 
 fn remove_binary(exe_path: &PathBuf) -> Result<()> {
@@ -95,30 +99,9 @@ fn remove_binary(exe_path: &PathBuf) -> Result<()> {
         return Ok(());
     }
 
-    #[cfg(target_os = "windows")]
-    {
-        let parent = exe_path
-            .parent()
-            .context("Failed to get parent directory")?;
-        let batch_script = parent.join("uninstall_wcapp.bat");
-
-        let script_content = format!(
-            "@echo off\r\n\
-             timeout /t 2 /nobreak >nul 2>&1\r\n\
-             del /f /q \"{}\" >nul 2>&1\r\n\
-             del /f /q \"%~f0\" >nul 2>&1\r\n",
-            exe_path.display()
-        );
-
-        fs::write(&batch_script, script_content).context("Failed to create uninstall script")?;
-
-        println!("✓ Binary removal scheduled");
-    }
-
+    // Check permissions before attempting self-deletion
     #[cfg(not(target_os = "windows"))]
     {
-        use std::process::Command;
-
         // Check if we can write to the binary's directory
         if let Some(parent) = exe_path.parent() {
             if let Ok(metadata) = fs::metadata(parent) {
@@ -126,7 +109,13 @@ fn remove_binary(exe_path: &PathBuf) -> Result<()> {
                 let permissions = metadata.permissions();
                 let can_write = permissions.mode() & 0o200 != 0; // Check write permission
 
-                if !can_write || exe_path.starts_with("/usr") {
+                // Check if it's a system directory that typically requires sudo
+                let is_system_dir = exe_path.starts_with("/usr")
+                    || exe_path.starts_with("/bin")
+                    || exe_path.starts_with("/sbin")
+                    || exe_path.starts_with("/opt") && !exe_path.starts_with("/opt/homebrew");
+
+                if !can_write || is_system_dir {
                     println!();
                     println!(
                         "✗ Insufficient permissions to remove {}",
@@ -138,11 +127,26 @@ fn remove_binary(exe_path: &PathBuf) -> Result<()> {
                 }
             }
         }
-
-        fs::remove_file(exe_path).context("Failed to remove binary")?;
-        println!("✓ Binary removed");
     }
 
+    #[cfg(target_os = "windows")]
+    {
+        // Check if we can write to the directory
+        if let Some(parent) = exe_path.parent() {
+            if let Ok(metadata) = fs::metadata(parent) {
+                use std::os::windows::fs::MetadataExt;
+                let attributes = metadata.file_attributes();
+                let is_readonly = attributes & 0x1 != 0; // FILE_ATTRIBUTE_READONLY
+
+                if is_readonly {
+                    println!("✗ Cannot remove binary - directory is read-only");
+                    return Ok(());
+                }
+            }
+        }
+    }
+
+    println!("✓ Binary will be removed when uninstall completes");
     Ok(())
 }
 
@@ -154,7 +158,9 @@ fn remove_config() -> Result<()> {
 
             if let Some(parent) = config_path.parent() {
                 if parent.read_dir()?.next().is_none() {
-                    fs::remove_dir(parent).ok();
+                    if let Err(e) = fs::remove_dir(parent) {
+                        println!("Note: Could not remove empty config directory: {}", e);
+                    }
                 }
             }
         } else {
