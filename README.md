@@ -4,6 +4,8 @@ Application for @Incalculas's wallpaper collection.
 
 A cross-platform CLI tool to fetch and set wallpapers from the Incalculas wallpaper collection.
 
+> Not a single line of rust code was written by me. Purely vibecoded.
+
 **Features:**
 
 - Automatically fetches wallpapers from the configured repository
@@ -34,33 +36,33 @@ These scripts automatically download and install the latest version for your pla
 
 #### Windows
 
-1. Download `wcapp-windows-x86_64.exe` from [releases](https://github.com/KingBenny101/wcapp/releases/latest)
-2. Rename to `wcapp.exe`
-3. Add to PATH or run from current directory
+**Windows (x86_64/ARM64):**
+
+1. Download the appropriate binary for your architecture from [releases](https://github.com/KingBenny101/wcapp/releases/latest)
+2. Create directory: `%LOCALAPPDATA%\Programs\wcapp`
+3. Place the binary there and rename to `wcapp.exe`
+4. Add `%LOCALAPPDATA%\Programs\wcapp` to your user PATH
 
 #### macOS/Linux
 
-Download for your platform:
-
-**macOS (Intel):**
+**macOS (Intel/Apple Silicon):**
 
 ```bash
-curl -L https://github.com/KingBenny101/wcapp/releases/latest/download/wcapp-macos-x86_64 -o wcapp
-chmod +x wcapp && sudo mv wcapp /usr/local/bin/
+curl -L https://github.com/KingBenny101/wcapp/releases/latest/download/wcapp-x86_64-apple-darwin -o wcapp  # or aarch64-apple-darwin
+chmod +x wcapp
+mkdir -p ~/.local/bin
+mv wcapp ~/.local/bin/
+# Add to PATH if needed: export PATH="$HOME/.local/bin:$PATH"
 ```
 
-**macOS (Apple Silicon):**
+**Linux (x86_64/ARM64/32-bit):**
 
 ```bash
-curl -L https://github.com/KingBenny101/wcapp/releases/latest/download/wcapp-macos-aarch64 -o wcapp
-chmod +x wcapp && sudo mv wcapp /usr/local/bin/
-```
-
-**Linux:**
-
-```bash
-curl -L https://github.com/KingBenny101/wcapp/releases/latest/download/wcapp-linux-x86_64 -o wcapp
-chmod +x wcapp && sudo mv wcapp /usr/local/bin/
+curl -L https://github.com/KingBenny101/wcapp/releases/latest/download/wcapp-x86_64-unknown-linux-gnu -o wcapp  # or aarch64/i686 variants
+chmod +x wcapp
+mkdir -p ~/.local/bin
+mv wcapp ~/.local/bin/
+# Add to PATH if needed: export PATH="$HOME/.local/bin:$PATH"
 ```
 
 ### Alternative Methods
