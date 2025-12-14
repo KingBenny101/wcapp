@@ -5,12 +5,13 @@
 set -e
 
 # Redirect stdin to terminal to allow interactive prompts when piped
-if [ -t 0 ]; then
-    # Already interactive
-    :
-else
-    # Being piped, redirect to tty
-    exec < /dev/tty
+if [ ! -t 0 ] || [ ! -t 1 ]; then
+    if [ -t 1 ]; then  # stdout is tty, ensure full terminal access
+        exec < /dev/tty > /dev/tty 2>&1
+    else
+        printf "error: Cannot run interactively without terminal access\n" >&2
+        exit 1
+    fi
 fi
 
 echo "wcapp Installer"
