@@ -4,16 +4,6 @@
 
 set -e
 
-# Redirect stdin to terminal to allow interactive prompts when piped
-if [ ! -t 0 ] || [ ! -t 1 ]; then
-    if [ -t 1 ]; then  # stdout is tty, ensure full terminal access
-        exec < /dev/tty > /dev/tty 2>&1
-    else
-        printf "error: Cannot run interactively without terminal access\n" >&2
-        exit 1
-    fi
-fi
-
 echo "wcapp Installer"
 echo ""
 
@@ -81,7 +71,7 @@ echo "2. Current directory"
 echo "3. Custom location"
 echo ""
 printf "Enter choice (1-3) [1]: "
-read -r choice
+read -r choice < /dev/tty
 
 # Default to option 1 if empty
 if [ -z "$choice" ]; then
@@ -119,7 +109,7 @@ case "$choice" in
         ;;
     3)
         printf "Enter full path (e.g., ~/bin/wcapp): "
-        read -r custom_path
+        read -r custom_path < /dev/tty
         custom_dir=$(dirname "$custom_path")
         
         if [ ! -d "$custom_dir" ]; then
